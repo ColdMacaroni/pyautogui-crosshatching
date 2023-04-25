@@ -138,13 +138,15 @@ def read_file(fn: str):
     # convert to black and white
     bw_img = img.convert('L')
 
+    img.close()
+
     width, height = bw_img.size
     matrix = list()
     for y in range(height):
         matrix.append(list())
         for x in range(width):
             # Clamp between values
-            matrix[-1].append(round((255 - bw_img.getpixel((x, y))) / 255 * len(VALUES)))
+            matrix[-1].append(round((255 - bw_img.getpixel((x, y))) / 255 * (len(VALUES) - 1)))
             print(f"{matrix[-1][-1]} ", end="")
         print()
 
