@@ -144,7 +144,7 @@ def read_file(fn: str):
         matrix.append(list())
         for x in range(width):
             # Clamp between values
-            matrix[-1].append(round((255 - bw_img.getpixel((x, y))) / 255 * 9))
+            matrix[-1].append(round((255 - bw_img.getpixel((x, y))) / 255 * len(VALUES)))
             print(f"{matrix[-1][-1]} ", end="")
         print()
 
