@@ -166,20 +166,22 @@ def read_file(fn: str):
 
     return matrix
 
-def main():
-    # test = [[0, 1, 2, 3, 4, 5, 6, 7, 8],
-    #         [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    #         [2, 3, 4, 5, 6, 7, 8, 9, 8],
-    #         [3, 4, 5, 6, 7, 8, 9, 8, 7],
-    #         [4, 5, 6, 7, 8, 9, 8, 7, 7]]
+def generate_test_matrix():
+    """Generates a diagonal gradient"""
+    num_values = len(VALUES)
     test = []
-    for i in range(0, 10):
+    for y in range(num_values + 1):
         test.append([])
-        for x in range(0, 10):
-            test[-1].append((i - x) % 10)
+        for x in range(num_values + 1):
+            test[-1].append((y - x) % num_values)
 
-    pixel_matrix = matrix_to_pixels(read_file(argv[1]))
-    # pixel_matrix = matrix_to_pixels(test)
+    return test
+
+def main():
+    if len(argv) > 1:
+        pixel_matrix = matrix_to_pixels(read_file(argv[1]))
+    else:
+        pixel_matrix = matrix_to_pixels(generate_test_matrix())
 
     sleep(1)
     og_x, og_y = pyautogui.position()
