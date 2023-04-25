@@ -5,6 +5,7 @@ from sys import argv
 
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
+
 class Pixel:
     SIZE = 10
 
@@ -18,9 +19,11 @@ class Pixel:
         return f"<{self.__class__.__name__}: {self.value}>"
 
     def draw(self, x, y):
-        # these are cumulative, which is why im using disconnected if statements.
+        # These are cumulative which is why im using disconnected if statements
         # On another language i'd use cascading cases in a switch
-        d=0
+
+        # How long a drag should last
+        d = 0
 
         # With a value of 0 we dont do anything.
 
@@ -132,6 +135,7 @@ def matrix_to_pixels(ls: list[list[int]]):
 
     return matrix
 
+
 def read_file(fn: str):
     img = Image.open(fn)
 
@@ -140,17 +144,22 @@ def read_file(fn: str):
 
     img.close()
 
+    max_val_idx = (len(VALUES) - 1)
     width, height = bw_img.size
     matrix = list()
     for y in range(height):
         matrix.append(list())
         for x in range(width):
             # Clamp between values
-            matrix[-1].append(round((255 - bw_img.getpixel((x, y))) / 255 * (len(VALUES) - 1)))
+            matrix[-1].append(
+                round((255 - bw_img.getpixel((x, y))) / 255 * max_val_idx)
+            )
+
             print(f"{matrix[-1][-1]} ", end="")
         print()
 
     return matrix
+
 
 def generate_test_matrix():
     """Generates a diagonal gradient"""
@@ -162,6 +171,7 @@ def generate_test_matrix():
             test[-1].append((y - x) % num_values)
 
     return test
+
 
 def main():
     if len(argv) > 1:
@@ -175,7 +185,9 @@ def main():
     # draw em
     for y in range(len(pixel_matrix)):
         for x in range(len(pixel_matrix[y])):
-            pixel_matrix[y][x].draw(og_x + Pixel.SIZE * x, og_y + Pixel.SIZE * y)
+            pixel_matrix[y][x].draw(
+                og_x + Pixel.SIZE * x, og_y + Pixel.SIZE * y
+            )
 
 
 if __name__ == "__main__":
