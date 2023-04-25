@@ -112,22 +112,6 @@ class Pixel:
             # Draw to right 3/4 from top
             pyautogui.drag(self.SIZE, 0, duration=d)
 
-        # if self.value >= 9:
-        #     # This will completely fill the square
-        #     # Move to start
-        #     pyautogui.moveTo(x, y)
-        #     # Fill EVERYTHING
-        #     for i in range(self.SIZE + 1):
-        #         if i % 2:  # odd
-        #             # Go left
-        #             pyautogui.drag(-self.SIZE, 0)
-
-        #         else: # even
-        #             # Go right
-        #             pyautogui.drag(self.SIZE, 0)
-
-        #         # Go down one to move onto the next row
-        #         pyautogui.move(0, 1)
         if self.value >= 9:
             # Draw box around
             pyautogui.moveTo(x, y)
