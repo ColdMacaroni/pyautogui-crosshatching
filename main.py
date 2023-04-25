@@ -155,9 +155,6 @@ def read_file(fn: str):
                 round((255 - bw_img.getpixel((x, y))) / 255 * max_val_idx)
             )
 
-            print(f"{matrix[-1][-1]} ", end="")
-        print()
-
     return matrix
 
 
