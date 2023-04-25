@@ -6,7 +6,7 @@ from sys import argv
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 class Pixel:
-    SIZE = 5
+    SIZE = 10
 
     def __init__(self, value):
         if value in VALUES:
@@ -138,6 +138,7 @@ class Pixel:
 
 
 def matrix_to_pixels(ls: list[list[int]]):
+    """Converts the give matrix of ints into Pixel objects"""
     matrix = []
 
     for y in range(len(ls)):
