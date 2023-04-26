@@ -66,7 +66,7 @@ def generate_test_matrix():
 def value1_lines(matrix):
     """Gets the single BL -> TR diagonal lines
     This function tries really hard to only traverse through the widest side"""
-
+    val = 1
     lines = []
 
     # We'll go through x if it's the longest, or y if not
@@ -74,32 +74,68 @@ def value1_lines(matrix):
     # go through every cell, we'd miss some if we didn't adapt
 
     # This variable decides if x(0) or y(1) should be traversed
-    long_side = 'x' if len(matrix[0]) > len(matrix) else 'y'
+    which_long_side = 'x' if len(matrix[0]) > len(matrix) else 'y'
 
     smallest_side, largest_side = sorted((len(matrix), len(matrix[0])))
 
+    # TODO: Once it reaches the edge of the largest side, it just stops.
+    #       I would want then to run from the bottom if y or right if x,
+    #       starting at an idx of 1. This should cover it
     idx = 0
     while idx < largest_side:
         # Set our starting point
-        if long_side == 'x':
+        if which_long_side == 'x':
             x = idx
             y = 0
         else:
             x = 0
             y = idx
 
+        line = []
         # Walk down the diagonal
         while 0 <= x < len(matrix[0]) and 0 <= y < len(matrix):
-            # TODO!
+            if len(line) == 0 and matrix[y][x] >= val:
+                if which_long_side == 'x':
+                    # Start from top right
+                    line.append((x + 1, y))
+
+                else:
+                    # Start from bottom left
+                    line.append((x, y + 1))
+
+            elif len(line) == 1 and not matrix[y][x] >= val:
+                if which_long_side == 'x':
+                    # End on bottom left of the last square
+                    # I.e this one's top right
+                    line.append((x + 1, y))
+
+                else:
+                    # End on top right of last square
+                    # I.e. this one's bottom left
+                    line.append((x, y + 1))
+
+                # Then we update the lines and set up for the next loop
+                lines.append((line[0], line[1]))
+                line.clear()
 
             # We'll have the opposite heading depending
             # on which side we're walking from
-            if long_side == 'x':
+            if which_long_side == 'x':
                 x -= 1
                 y += 1
             else:
                 x += 1
                 y -= 1
+
+        # Add end point
+        if len(line) == 1:
+            if which_long_side == 'x':
+                # This value was trial and error if I'm being honest
+                # If I'm not being honest then this was product of my 503 IQ
+                lines.append((line[0], (x + 1, y)))
+
+            else:
+                lines.append((line[0], (x, y + 1)))
 
         idx += 1
 
@@ -185,6 +221,8 @@ def main():
         matrix = read_file(argv[1])
     else:
         matrix = generate_test_matrix()
+
+    matrix = [[9, 9, 0, 9, 9,] for _ in range(5)]
 
     unit = 25
 
