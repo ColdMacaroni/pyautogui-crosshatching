@@ -81,6 +81,11 @@ def value1_lines(matrix):
     # TODO: Once it reaches the edge of the largest side, it just stops.
     #       I would want then to run from the bottom if y or right if x,
     #       starting at an idx of 1. This should cover it
+    #
+    #       Another way to do this would be to just swap to the opposite
+    #       side of whichever I was just checking first. Picking up where
+    #       it left off. This position/offset could be calculated as
+    #       longest - smallest.
     idx = 0
     while idx < largest_side:
         # Set our starting point
