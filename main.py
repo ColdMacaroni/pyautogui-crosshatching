@@ -64,27 +64,38 @@ def generate_test_matrix():
 
 
 def value1_lines(matrix):
+    """Gets the single BL -> TR diagonal lines"""
+
     lines = []
 
-    # We'll increase x if it's the longest, or y if not
-    # Will do some boolean trickery
+    # We'll go through x if it's the longest, or y if not
+    # We need to do this because we want the diagonal lines to
+    # go through every cell, we'd miss some if we didn't adapt
+
+    # This variable decides if x(0) or y(1) should be traversed
+    inc_idx = 0 if len(matrix[0]) > len(matrix) else 1
 
     return lines
 
 
 def value5_lines(matrix):
-    """Gets the vertical lines"""
+    """Gets the single vertical lines"""
+    val = 5
     lines = []
 
     # Travel along the x
     for x in range(len(matrix[0])):
         st_pt = []
+
+        # The end of the line will be 1 coordinate down.
+        # Otherwise a cell would become just a dot
         for y in range(len(matrix)):
-            if len(st_pt) == 0 and matrix[y][x] >= 5:
+            if len(st_pt) == 0 and matrix[y][x] >= val:
                 st_pt.append((x + 0.5, y))
-            elif len(st_pt) == 1 and not matrix[y][x] >= 5:
+
+            elif len(st_pt) == 1 and not matrix[y][x] >= val:
                 # We add the row above because this one doesn't have any
-                st_pt.append((x + 0.5, y - 1))
+                st_pt.append((x + 0.5, y))
 
                 # Then we update the lines and set up for the next loop
                 lines.append((st_pt[0], st_pt[1]))
@@ -93,7 +104,38 @@ def value5_lines(matrix):
         # Add end point as end of image
         # This will happen if the line reaches to the end
         if len(st_pt) == 1:
-            lines.append((st_pt[0], (x + 0.5, len(matrix) - 1)))
+            lines.append((st_pt[0], (x + 0.5, len(matrix))))
+
+    return lines
+
+
+def value7_lines(matrix):
+    """Gets the single horizontal lines"""
+    val = 7
+    lines = []
+
+    # Travel along the y
+    for y in range(len(matrix)):
+        st_pt = []
+
+        # The end of the line will be 1 coordinate down.
+        # Otherwise a cell would become just a dot
+        for x in range(len(matrix[0])):
+            if len(st_pt) == 0 and matrix[y][x] >= val:
+                st_pt.append((x, y + 0.5))
+
+            elif len(st_pt) == 1 and not matrix[y][x] >= val:
+                # We add the row above because this one doesn't have any
+                st_pt.append((x, y + 0.5))
+
+                # Then we update the lines and set up for the next loop
+                lines.append((st_pt[0], st_pt[1]))
+                st_pt = []
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if len(st_pt) == 1:
+            lines.append((st_pt[0], (len(matrix[0]), y + 0.5)))
 
     return lines
 
@@ -116,7 +158,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    unit = 10
+    unit = 25
 
     # Program sleeps so that you can switch to the drawing program,
     # might want to wait for a click or hotkey instead.
@@ -127,6 +169,7 @@ def main():
 
     # Draw values
     draw_lines(value5_lines(matrix), start, unit)
+    draw_lines(value7_lines(matrix), start, unit)
 
 
 if __name__ == "__main__":
