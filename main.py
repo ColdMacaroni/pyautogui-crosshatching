@@ -5,7 +5,7 @@ from sys import argv
 
 # How dark the image is
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-ascii_vals = " .,-+;/=0#"
+
 # Value lines, each one also includes the ones below
 # 0 - Nothing
 # 1 - One line, /
@@ -63,22 +63,70 @@ def generate_test_matrix():
     return test
 
 
+def value1_lines(matrix):
+    lines = []
+
+    # We'll increase x if it's the longest, or y if not
+    # Will do some boolean trickery
+
+    return lines
+
+
+def value5_lines(matrix):
+    """Gets the vertical lines"""
+    lines = []
+
+    # Travel along the x
+    for x in range(len(matrix[0])):
+        st_pt = []
+        for y in range(len(matrix)):
+            if len(st_pt) == 0 and matrix[y][x] >= 5:
+                st_pt.append((x + 0.5, y))
+            elif len(st_pt) == 1 and not matrix[y][x] >= 5:
+                # We add the row above because this one doesn't have any
+                st_pt.append((x + 0.5, y - 1))
+
+                # Then we update the lines and set up for the next loop
+                lines.append((st_pt[0], st_pt[1]))
+                st_pt = []
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if len(st_pt) == 1:
+            lines.append((st_pt[0], (x + 0.5, len(matrix) - 1)))
+
+    return lines
+
+
+def convert(pos, strt, unit):
+    """Converts an xy to autogui pos"""
+    return pos[0] * unit + strt[0], pos[1] * unit + strt[1]
+
+
+def draw_lines(lines: list[tuple[int, int]],
+               start: tuple[int, int], unit: int):
+    for p1, p2 in lines:
+        pyautogui.moveTo(convert(p1, start, unit))
+        pyautogui.dragTo(convert(p2, start, unit))
+
+
 def main():
     if len(argv) > 1:
         matrix = read_file(argv[1])
     else:
         matrix = generate_test_matrix()
 
+    unit = 10
+
     # Program sleeps so that you can switch to the drawing program,
     # might want to wait for a click or hotkey instead.
-    sleep(1)
-    og_x, og_y = pyautogui.position()
+    sleep(2)
 
-    # draw em
-    for y in range(len(matrix)):
-        for x in range(len(matrix[y])):
-            print(ascii_vals[matrix[y][x]], end=" ")
-        print()
+    # Get start
+    start = pyautogui.position()
+
+    # Draw values
+    draw_lines(value5_lines(matrix), start, unit)
 
 
 if __name__ == "__main__":
