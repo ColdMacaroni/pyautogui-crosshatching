@@ -69,6 +69,8 @@ def main():
     else:
         matrix = generate_test_matrix()
 
+    # Program sleeps so that you can switch to the drawing program,
+    # might want to wait for a click or hotkey instead.
     sleep(1)
     og_x, og_y = pyautogui.position()
 
