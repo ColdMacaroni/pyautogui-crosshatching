@@ -64,7 +64,8 @@ def generate_test_matrix():
 
 
 def value1_lines(matrix):
-    """Gets the single BL -> TR diagonal lines"""
+    """Gets the single BL -> TR diagonal lines
+    This function tries really hard to only traverse through the widest side"""
 
     lines = []
 
@@ -73,7 +74,34 @@ def value1_lines(matrix):
     # go through every cell, we'd miss some if we didn't adapt
 
     # This variable decides if x(0) or y(1) should be traversed
-    inc_idx = 0 if len(matrix[0]) > len(matrix) else 1
+    long_side = 'x' if len(matrix[0]) > len(matrix) else 'y'
+
+    smallest_side, largest_side = sorted((len(matrix), len(matrix[0])))
+
+    idx = 0
+    while idx < largest_side:
+        # Set our starting point
+        if long_side == 'x':
+            x = idx
+            y = 0
+        else:
+            x = 0
+            y = idx
+
+        # Walk down the diagonal
+        while 0 <= x < len(matrix[0]) and 0 <= y < len(matrix):
+            # TODO!
+
+            # We'll have the opposite heading depending
+            # on which side we're walking from
+            if long_side == 'x':
+                x -= 1
+                y += 1
+            else:
+                x += 1
+                y -= 1
+
+        idx += 1
 
     return lines
 
@@ -168,6 +196,7 @@ def main():
     start = pyautogui.position()
 
     # Draw values
+    draw_lines(value1_lines(matrix), start, unit)
     draw_lines(value5_lines(matrix), start, unit)
     draw_lines(value7_lines(matrix), start, unit)
 
