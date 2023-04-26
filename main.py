@@ -3,137 +3,30 @@ from time import sleep
 from PIL import Image
 from sys import argv
 
+# How dark the image is
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-
-
-class Pixel:
-    SIZE = 10
-
-    def __init__(self, value):
-        if value in VALUES:
-            self.value = value
-        else:
-            raise ValueError(f"Value must be within {VALUES}")
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__}: {self.value}>"
-
-    def draw(self, x, y):
-        # These are cumulative which is why im using disconnected if statements
-        # On another language i'd use cascading cases in a switch
-
-        # How long a drag should last
-        d = 0
-
-        # With a value of 0 we dont do anything.
-
-        # Single diagonal
-        if self.value >= 1:
-            # Go to the bottom left of the square
-            pyautogui.moveTo(x, y + self.SIZE, duration=d)
-
-            # Draw a bl tr diagonal
-            pyautogui.drag(self.SIZE, -self.SIZE, duration=d)
-
-        # Draw two diagonals
-        if self.value >= 2:
-            # Go to the left, 1/2 down of the square
-            pyautogui.moveTo(x, y + self.SIZE/2)
-
-            # Draw the top diagonal
-            pyautogui.drag(self.SIZE/2, -self.SIZE/2, duration=d)
-
-            # go to middle bottom
-            pyautogui.moveTo(x + self.SIZE/2, y + self.SIZE)
-
-            # Draw the bottom diagonal
-            pyautogui.drag(self.SIZE/2, -self.SIZE/2, duration=d)
-
-        # Single diagonal, other way
-        if self.value >= 3:
-            # Go to the top left of the square
-            pyautogui.moveTo(x, y)
-
-            # Draw a tl br diagonal
-            pyautogui.drag(self.SIZE, self.SIZE, duration=d)
-
-        # Draw two diagonals, other way
-        if self.value >= 4:
-            # Go to 1/2 right of the square
-            pyautogui.moveTo(x + self.SIZE/2, y)
-
-            # Draw the top diagonal
-            pyautogui.drag(self.SIZE/2, self.SIZE/2, duration=d)
-
-            # go to middle bottom
-            pyautogui.moveTo(x, y + self.SIZE/2)
-
-            # Draw the bottom diagonal
-            pyautogui.drag(self.SIZE/2, self.SIZE/2, duration=d)
-
-        # Single vertical line
-        if self.value >= 5:
-            # Top middle
-            pyautogui.moveTo(x + self.SIZE/2, y)
-
-            # Draw to bottom middle
-            pyautogui.drag(0, self.SIZE, duration=d)
-
-        # two vertical lines
-        if self.value >= 6:
-            # Bottom 1/4 from left
-            pyautogui.moveTo(x + self.SIZE/4, y + self.SIZE)
-
-            # Draw to top 1/4 from left
-            pyautogui.drag(0, -self.SIZE, duration=d)
-
-            # Top 3/4 from left
-            pyautogui.moveTo(x + self.SIZE * 3/4, y)
-
-            # Draw to bottom 3/4 from left
-            pyautogui.drag(0, self.SIZE, duration=d)
-
-        # Single horizontal line
-        if self.value >= 7:
-            # right middle
-            pyautogui.moveTo(x + self.SIZE, y + self.SIZE/2)
-
-            # Draw to left middle
-            pyautogui.drag(-self.SIZE, 0, duration=d)
-
-        # two vertical lines
-        if self.value >= 8:
-            # left 1/4 from top
-            pyautogui.moveTo(x, y + self.SIZE/4)
-
-            # Draw to right 1/4 from top
-            pyautogui.drag(self.SIZE, 0, duration=d)
-
-            # left 3/4 from top
-            pyautogui.moveTo(x, y + self.SIZE * 3/4)
-
-            # Draw to right 3/4 from top
-            pyautogui.drag(self.SIZE, 0, duration=d)
-
-        if self.value >= 9:
-            # Draw box around
-            pyautogui.moveTo(x, y)
-            pyautogui.drag(self.SIZE, 0, duration=d)
-            pyautogui.drag(0, self.SIZE, duration=d)
-            pyautogui.drag(-self.SIZE, 0, duration=d)
-            pyautogui.drag(0, -self.SIZE, duration=d)
-
-
-def matrix_to_pixels(ls: list[list[int]]):
-    """Converts the give matrix of ints into Pixel objects"""
-    matrix = []
-
-    for y in range(len(ls)):
-        matrix.append(list())
-        for x in range(len(ls[y])):
-            matrix[y].append(Pixel(ls[y][x]))
-
-    return matrix
+ascii_vals = " .,-+;/=0#"
+# Value lines, each one also includes the ones below
+# 0 - Nothing
+# 1 - One line, /
+# 2 - Two lines, a / starting at half the left side
+#                another starting at half the bottom side
+# 3 - One line, \
+# 4 - Two lines, a \ starting at half the left side
+#                another starting at half the top isde
+# 5 - One line, |
+# 6 - Two lines, a | starting a quarter from the left
+#                another starting a quarter from the right
+# 7 - One line, -
+# 8 - Two lines, a - starting a quarter from the top
+#                another starting a quarter from the bottom
+# 9 - An outline, can be described as
+#     one | at the left, another at the right
+#     one - at the top, another at the bottom
+#     ~ This may cause the outlines to be twice as thick.
+#     ~ Could be solved by only drawing one horiz and one vert line
+#     ~ Then maybe only draw the missing if the pixel next to it doesn't do it
+#     ~ Could also be split into 9 and 10 for horiz and vert.
 
 
 def read_file(fn: str):
@@ -172,19 +65,18 @@ def generate_test_matrix():
 
 def main():
     if len(argv) > 1:
-        pixel_matrix = matrix_to_pixels(read_file(argv[1]))
+        matrix = read_file(argv[1])
     else:
-        pixel_matrix = matrix_to_pixels(generate_test_matrix())
+        matrix = generate_test_matrix()
 
     sleep(1)
     og_x, og_y = pyautogui.position()
 
     # draw em
-    for y in range(len(pixel_matrix)):
-        for x in range(len(pixel_matrix[y])):
-            pixel_matrix[y][x].draw(
-                og_x + Pixel.SIZE * x, og_y + Pixel.SIZE * y
-            )
+    for y in range(len(matrix)):
+        for x in range(len(matrix[y])):
+            print(ascii_vals[matrix[y][x]], end=" ")
+        print()
 
 
 if __name__ == "__main__":
