@@ -64,7 +64,7 @@ def generate_test_matrix():
     return test
 
 
-def value1_lines(matrix):
+def value1_lines(matrix: list[list[int]], width: int, height: int):
     """Gets the single BL -> TR diagonal lines
     This function tries really hard to only traverse through the widest side"""
     val = 1
@@ -72,10 +72,10 @@ def value1_lines(matrix):
 
     # We're going top left to bottom right, so we need to flip the matrix
     coord_matrix = [
-        [(x, y) for x in range(len(matrix[0]) - 1, -1, -1)]
-        for y in range(len(matrix))]
+        [(x, y) for x in range(width - 1, -1, -1)]
+        for y in range(height)]
 
-    smallest_side, largest_side = sorted((len(matrix), len(matrix[0])))
+    smallest_side, largest_side = sorted((height, width))
 
     for offset in range(-largest_side + 1, smallest_side):
 
@@ -185,7 +185,10 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    matrix = [[9, 9, 0, 9, 9, 0, 9] for _ in range(5)]
+    matrix = [[9, 0, 9, 8, 7, 6, 5] for _ in range(5)]
+
+    width = len(matrix[0])
+    height = len(matrix)
 
     unit = 25
 
@@ -197,7 +200,7 @@ def main():
     start = pyautogui.position()
 
     # Draw values
-    draw_lines(value1_lines(matrix), start, unit)
+    draw_lines(value1_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix), start, unit)
     draw_lines(value7_lines(matrix), start, unit)
 
