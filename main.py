@@ -2,6 +2,7 @@ import pyautogui
 from time import sleep
 from PIL import Image
 from sys import argv
+import numpy as np
 
 # How dark the image is
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
@@ -69,80 +70,37 @@ def value1_lines(matrix):
     val = 1
     lines = []
 
-    # We'll go through x if it's the longest, or y if not
-    # We need to do this because we want the diagonal lines to
-    # go through every cell, we'd miss some if we didn't adapt
-
-    # This variable decides if x(0) or y(1) should be traversed
-    which_long_side = 'x' if len(matrix[0]) > len(matrix) else 'y'
+    # We're going top left to bottom right, so we need to flip the matrix
+    coord_matrix = [
+        [(x, y) for x in range(len(matrix[0]) - 1, -1, -1)]
+        for y in range(len(matrix))]
 
     smallest_side, largest_side = sorted((len(matrix), len(matrix[0])))
 
-    # TODO: Once it reaches the edge of the largest side, it just stops.
-    #       I would want then to run from the bottom if y or right if x,
-    #       starting at an idx of 1. This should cover it
-    #
-    #       Another way to do this would be to just swap to the opposite
-    #       side of whichever I was just checking first. Picking up where
-    #       it left off. This position/offset could be calculated as
-    #       longest - smallest.
-    idx = 0
-    while idx < largest_side:
-        # Set our starting point
-        if which_long_side == 'x':
-            x = idx
-            y = 0
-        else:
-            x = 0
-            y = idx
+    for offset in range(-largest_side + 1, smallest_side):
 
         line = []
-        # Walk down the diagonal
-        while 0 <= x < len(matrix[0]) and 0 <= y < len(matrix):
+
+        # This will get me the diagonal i want
+        diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
+
+        # First array contains x positions, the second: y.
+        for x, y in zip(*diag_coords):
+            # Line needs a start, top right
             if len(line) == 0 and matrix[y][x] >= val:
-                if which_long_side == 'x':
-                    # Start from top right
-                    line.append((x + 1, y))
+                line.append((x + 1, y))
 
-                else:
-                    # Start from bottom left
-                    line.append((x, y + 1))
-
+            # Line needs an end, bottom left
             elif len(line) == 1 and not matrix[y][x] >= val:
-                if which_long_side == 'x':
-                    # End on bottom left of the last square
-                    # I.e this one's top right
-                    line.append((x + 1, y))
-
-                else:
-                    # End on top right of last square
-                    # I.e. this one's bottom left
-                    line.append((x, y + 1))
+                line.append((x + 1, y))
 
                 # Then we update the lines and set up for the next loop
                 lines.append((line[0], line[1]))
                 line.clear()
 
-            # We'll have the opposite heading depending
-            # on which side we're walking from
-            if which_long_side == 'x':
-                x -= 1
-                y += 1
-            else:
-                x += 1
-                y -= 1
-
         # Add end point
         if len(line) == 1:
-            if which_long_side == 'x':
-                # This value was trial and error if I'm being honest
-                # If I'm not being honest then this was product of my 503 IQ
-                lines.append((line[0], (x + 1, y)))
-
-            else:
-                lines.append((line[0], (x, y + 1)))
-
-        idx += 1
+            lines.append((line[0], (x, y + 1)))
 
     return lines
 
@@ -227,7 +185,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    matrix = [[9, 9, 0, 9, 9,] for _ in range(5)]
+    matrix = [[9, 9, 0, 9, 9, 0, 9] for _ in range(5)]
 
     unit = 25
 
