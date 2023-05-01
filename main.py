@@ -185,12 +185,12 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    matrix = [[9, 0, 9, 8, 7, 6, 5] for _ in range(5)]
+    # matrix = [[9, 0, 9, 8, 7, 6, 5] for _ in range(5)]
 
     width = len(matrix[0])
     height = len(matrix)
 
-    unit = 25
+    unit = 10
 
     # Program sleeps so that you can switch to the drawing program,
     # might want to wait for a click or hotkey instead.
