@@ -208,11 +208,26 @@ def convert(pos, strt, unit):
     return pos[0] * unit + strt[0], pos[1] * unit + strt[1]
 
 
+def dist2(pos1: tuple[float, float], pos2: tuple[float, float]) -> float:
+    """Returns the distance squared of two points."""
+    return pow(pos2[0] - pos1[0], 2) + pow(pos2[1] - pos1[1], 2)
+
+
 def draw_lines(lines: list[tuple[int, int]],
                start: tuple[int, int], unit: int):
+    # These are used later to calculate the most efficient next point.
+    prev_p2 = (0, 0)
     for p1, p2 in lines:
-        pyautogui.moveTo(convert(p1, start, unit))
-        pyautogui.dragTo(convert(p2, start, unit))
+        # Move the mouse to the closest end of the line and draw from there.
+        if dist2(prev_p2, p1) <= dist2(prev_p2, p2):
+            pyautogui.moveTo(convert(p1, start, unit))
+            pyautogui.dragTo(convert(p2, start, unit))
+
+        else:
+            pyautogui.moveTo(convert(p2, start, unit))
+            pyautogui.dragTo(convert(p1, start, unit))
+
+        prev_p2 = p2
 
 
 def main():
@@ -221,7 +236,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    # matrix = [[9, 0, 9, 8, 7, 6, 5] for _ in range(5)]
+    matrix = [[9, 9, 9, 9, 9, 9] for _ in range(5)]
 
     width = len(matrix[0])
     height = len(matrix)
