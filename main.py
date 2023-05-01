@@ -167,6 +167,42 @@ def value7_lines(matrix):
     return lines
 
 
+def value8_lines(matrix):
+    """Gets the single horizontal lines"""
+    val = 8
+    lines = []
+
+    # Travel along the y
+    for y in range(len(matrix)):
+        st_pt = []
+
+        # The end of the line will be 1 coordinate down.
+        # Otherwise a cell would become just a dot
+        for x in range(len(matrix[0])):
+            if len(st_pt) == 0 and matrix[y][x] >= val:
+                st_pt.append((x, y + 0.25))
+
+            elif len(st_pt) == 1 and not matrix[y][x] >= val:
+                # We add the row above because this one doesn't have any
+                st_pt.append((x, y + 0.25))
+
+                # Then we update the lines and set up for the next loop
+                # We add two lines, because yeah. The second point is shifted 1/2 from the first.
+                # Because they're at 1/4 and 3/4
+                # TODO! There has to be a better way of doing the second point
+                lines.append((st_pt[0], st_pt[1]))
+                lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (st_pt[1][0], st_pt[1][1] + 0.5)))
+                st_pt = []
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if len(st_pt) == 1:
+            lines.append((st_pt[0], (len(matrix[0]), y)))
+            lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (st_pt[1][0], st_pt[1][1] + 0.5)))
+
+    return lines
+
+
 def convert(pos, strt, unit):
     """Converts an xy to autogui pos"""
     return pos[0] * unit + strt[0], pos[1] * unit + strt[1]
@@ -203,6 +239,7 @@ def main():
     draw_lines(value1_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix), start, unit)
     draw_lines(value7_lines(matrix), start, unit)
+    draw_lines(value8_lines(matrix), start, unit)
 
 
 if __name__ == "__main__":
