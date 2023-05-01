@@ -236,7 +236,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    matrix = [[9, 9, 9, 9, 9, 9] for _ in range(5)]
+    # matrix = [[9, 9, 9, 9, 9, 9] for _ in range(5)]
 
     width = len(matrix[0])
     height = len(matrix)
