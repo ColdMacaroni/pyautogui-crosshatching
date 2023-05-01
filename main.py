@@ -197,8 +197,8 @@ def value8_lines(matrix):
         # Add end point as end of image
         # This will happen if the line reaches to the end
         if len(st_pt) == 1:
-            lines.append((st_pt[0], (len(matrix[0]), y)))
-            lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (st_pt[1][0], st_pt[1][1] + 0.5)))
+            lines.append((st_pt[0], (len(matrix[0]), y + 0.25)))
+            lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (len(matrix[0]), y + 0.75)))
 
     return lines
 
