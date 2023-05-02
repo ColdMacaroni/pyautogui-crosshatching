@@ -112,26 +112,26 @@ def value5_lines(matrix, width, height):
 
     # Travel along the x
     for x in range(width):
-        st_pt = []
+        prev_x = prev_y = None
 
         # The end of the line will be 1 coordinate down.
         # Otherwise a cell would become just a dot
         for y in range(height):
-            if len(st_pt) == 0 and matrix[y][x] >= val:
-                st_pt.append((x + 0.5, y))
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
 
-            elif len(st_pt) == 1 and not matrix[y][x] >= val:
-                # We add the row above because this one doesn't have any
-                st_pt.append((x + 0.5, y))
+            elif prev_x is not None and not matrix[y][x] >= val:
+                # Add 0.5 to center
+                lines.append(((prev_x + 0.5, prev_y), (x + 0.5, y)))
 
-                # Then we update the lines and set up for the next loop
-                lines.append((st_pt[0], st_pt[1]))
-                st_pt = []
+                # Reset
+                prev_x = prev_y = None
 
         # Add end point as end of image
         # This will happen if the line reaches to the end
-        if len(st_pt) == 1:
-            lines.append((st_pt[0], (x + 0.5, height)))
+        if prev_x is not None:
+            lines.append(((prev_x + 0.5, prev_y), (x + 0.5, height)))
 
     return lines
 
@@ -143,26 +143,25 @@ def value7_lines(matrix, width, height):
 
     # Travel along the y
     for y in range(height):
-        st_pt = []
+        prev_x = prev_y = None
 
         # The end of the line will be 1 coordinate down.
         # Otherwise a cell would become just a dot
         for x in range(width):
-            if len(st_pt) == 0 and matrix[y][x] >= val:
-                st_pt.append((x, y + 0.5))
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
 
-            elif len(st_pt) == 1 and not matrix[y][x] >= val:
-                # We add the row above because this one doesn't have any
-                st_pt.append((x, y + 0.5))
-
+            elif prev_x is not None and not matrix[y][x] >= val:
                 # Then we update the lines and set up for the next loop
-                lines.append((st_pt[0], st_pt[1]))
-                st_pt = []
+                lines.append(((prev_x, prev_y + 0.5), (x, y + 0.5)))
+
+                prev_x = prev_y = None
 
         # Add end point as end of image
         # This will happen if the line reaches to the end
-        if len(st_pt) == 1:
-            lines.append((st_pt[0], (width, y + 0.5)))
+        if prev_x is not None:
+            lines.append(((prev_x, prev_y + 0.5), (x + 1, y + 0.5)))
 
     return lines
 
