@@ -105,6 +105,46 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
     return lines
 
 
+def value3_lines(matrix: list[list[int]], width: int, height: int):
+    """Gets the single TL -> BR diagonal lines"""
+    val = 3
+    lines = []
+
+    # We're going top left to bottom right, so we need to flip the matrix
+    coord_matrix = [
+        [(x, y) for x in range(width)]
+        for y in range(height)]
+
+    smallest_side, largest_side = sorted((height, width))
+
+    for offset in range(-largest_side + 1, smallest_side):
+        prev_x = prev_y = None
+
+        # This will get me the diagonal i want
+        diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
+
+        # First array contains x positions, the second: y.
+        for x, y in zip(*diag_coords):
+            # Line needs a start, top right
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
+
+            # Line needs an end, bottom left
+            elif prev_x is not None and not matrix[y][x] >= val:
+                # Then we update the lines and set up for the next loop
+                lines.append(((prev_x, prev_y + 1), (x, y + 1)))
+
+                # Reset for next loop
+                prev_x = prev_y = None
+
+        # Add end point
+        if prev_x is not None:
+            lines.append(((prev_x, prev_y), (x + 1, y + 1)))
+
+    return lines
+
+
 def value5_lines(matrix, width, height):
     """Gets the single vertical lines"""
     val = 5
@@ -290,6 +330,7 @@ def main():
 
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
+    draw_lines(value3_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix, width, height), start, unit)
     draw_lines(value6_lines(matrix, width, height), start, unit)
     draw_lines(value7_lines(matrix, width, height), start, unit)
