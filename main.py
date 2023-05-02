@@ -105,6 +105,50 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
     return lines
 
 
+def value2_lines(matrix: list[list[int]], width: int, height: int):
+    """Gets the double BL -> TR diagonal lines"""
+    val = 2
+    lines = []
+
+    # TODO! Not working
+
+    # We're going top left to bottom right, so we need to flip the matrix
+    coord_matrix = [
+        [(x, y) for x in range(width - 1, -1, -1)]
+        for y in range(height)]
+
+    smallest_side, largest_side = sorted((height, width))
+
+    for offset in range(-largest_side + 1, smallest_side):
+        prev_x = prev_y = None
+
+        # This will get me the diagonal i want
+        diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
+
+        # First array contains x positions, the second: y.
+        for x, y in zip(*diag_coords):
+            # Line needs a start, top right
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
+
+            # Line needs an end, bottom left
+            elif prev_x is not None and not matrix[y][x] >= val:
+                # Then we update the lines and set up for the next loop
+                lines.append(((prev_x + 0.5, prev_y), (x, y + 0.5)))
+                lines.append(((prev_x + 1, prev_y + 0.5), (x + 0.5, y + 1)))
+
+                # Reset for next loop
+                prev_x = prev_y = None
+
+        # Add end point
+        if prev_x is not None:
+            lines.append(((prev_x + 0.5, prev_y), (x, y + 0.5)))
+            lines.append(((prev_x + 1, prev_y + 0.5), (x + 0.5, y + 1)))
+
+    return lines
+
+
 def value3_lines(matrix: list[list[int]], width: int, height: int):
     """Gets the single TL -> BR diagonal lines"""
     val = 3
@@ -314,7 +358,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    # matrix = [[9, 9, 9, 9, 9, 9] for _ in range(5)]
+    matrix = [[2, 0, 2, 2, 0, 2] for _ in range(5)]
 
     width = len(matrix[0])
     height = len(matrix)
@@ -330,6 +374,7 @@ def main():
 
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
+    draw_lines(value2_lines(matrix, width, height), start, unit)
     draw_lines(value3_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix, width, height), start, unit)
     draw_lines(value6_lines(matrix, width, height), start, unit)
