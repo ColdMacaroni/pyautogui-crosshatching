@@ -136,6 +136,42 @@ def value5_lines(matrix, width, height):
     return lines
 
 
+def value6_lines(matrix, width, height):
+    """Gets the double vertical lines"""
+    val = 6
+    lines = []
+
+    off1 = 1/6
+    off2 = 5/6
+
+    # Travel along the x
+    for x in range(width):
+        prev_x = prev_y = None
+
+        # The end of the line will be 1 coordinate down.
+        # Otherwise a cell would become just a dot
+        for y in range(height):
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
+
+            elif prev_x is not None and not matrix[y][x] >= val:
+                # Add 0.5 to center
+                lines.append(((prev_x + off1, prev_y), (x + off1, y)))
+                lines.append(((prev_x + off2, prev_y), (x + off2, y)))
+
+                # Reset
+                prev_x = prev_y = None
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if prev_x is not None:
+            lines.append(((prev_x + off1, prev_y), (x + off1, height)))
+            lines.append(((prev_x + off2, prev_y), (x + off2, height)))
+
+    return lines
+
+
 def value7_lines(matrix, width, height):
     """Gets the single horizontal lines"""
     val = 7
@@ -255,6 +291,7 @@ def main():
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix, width, height), start, unit)
+    draw_lines(value6_lines(matrix, width, height), start, unit)
     draw_lines(value7_lines(matrix, width, height), start, unit)
     draw_lines(value8_lines(matrix, width, height), start, unit)
 
