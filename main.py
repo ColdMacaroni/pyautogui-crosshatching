@@ -105,18 +105,18 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
     return lines
 
 
-def value5_lines(matrix):
+def value5_lines(matrix, width, height):
     """Gets the single vertical lines"""
     val = 5
     lines = []
 
     # Travel along the x
-    for x in range(len(matrix[0])):
+    for x in range(width):
         st_pt = []
 
         # The end of the line will be 1 coordinate down.
         # Otherwise a cell would become just a dot
-        for y in range(len(matrix)):
+        for y in range(height):
             if len(st_pt) == 0 and matrix[y][x] >= val:
                 st_pt.append((x + 0.5, y))
 
@@ -131,23 +131,23 @@ def value5_lines(matrix):
         # Add end point as end of image
         # This will happen if the line reaches to the end
         if len(st_pt) == 1:
-            lines.append((st_pt[0], (x + 0.5, len(matrix))))
+            lines.append((st_pt[0], (x + 0.5, height)))
 
     return lines
 
 
-def value7_lines(matrix):
+def value7_lines(matrix, width, height):
     """Gets the single horizontal lines"""
     val = 7
     lines = []
 
     # Travel along the y
-    for y in range(len(matrix)):
+    for y in range(height):
         st_pt = []
 
         # The end of the line will be 1 coordinate down.
         # Otherwise a cell would become just a dot
-        for x in range(len(matrix[0])):
+        for x in range(width):
             if len(st_pt) == 0 and matrix[y][x] >= val:
                 st_pt.append((x, y + 0.5))
 
@@ -162,43 +162,46 @@ def value7_lines(matrix):
         # Add end point as end of image
         # This will happen if the line reaches to the end
         if len(st_pt) == 1:
-            lines.append((st_pt[0], (len(matrix[0]), y + 0.5)))
+            lines.append((st_pt[0], (width, y + 0.5)))
 
     return lines
 
 
-def value8_lines(matrix):
+def value8_lines(matrix, width, height):
     """Gets the single horizontal lines"""
     val = 8
     lines = []
 
+    # We need to put them a sixth from the edge so that they're evenly spaced
+    off1 = 1/6
+    off2 = 5/6
+
     # Travel along the y
-    for y in range(len(matrix)):
-        st_pt = []
+    for y in range(height):
+        prev_x = prev_y = None
 
         # The end of the line will be 1 coordinate down.
         # Otherwise a cell would become just a dot
-        for x in range(len(matrix[0])):
-            if len(st_pt) == 0 and matrix[y][x] >= val:
-                st_pt.append((x, y + 0.25))
+        for x in range(width):
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
 
-            elif len(st_pt) == 1 and not matrix[y][x] >= val:
-                # We add the row above because this one doesn't have any
-                st_pt.append((x, y + 0.25))
-
+            elif prev_x is not None and not matrix[y][x] >= val:
                 # Then we update the lines and set up for the next loop
-                # We add two lines, because yeah. The second point is shifted 1/2 from the first.
-                # Because they're at 1/4 and 3/4
+                # We add two lines, because yeah.
+                # They're at 1/4 and 3/4
                 # TODO! There has to be a better way of doing the second point
-                lines.append((st_pt[0], st_pt[1]))
-                lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (st_pt[1][0], st_pt[1][1] + 0.5)))
-                st_pt = []
+                lines.append(((prev_x, prev_y + off1), (x, y + off1)))
+                lines.append(((prev_x, prev_y + off2), (x, y + off2)))
+
+                prev_x = prev_y = None
 
         # Add end point as end of image
         # This will happen if the line reaches to the end
-        if len(st_pt) == 1:
-            lines.append((st_pt[0], (len(matrix[0]), y + 0.25)))
-            lines.append(((st_pt[0][0], st_pt[0][1] + 0.5), (len(matrix[0]), y + 0.75)))
+        if prev_x is not None:
+            lines.append(((prev_x, prev_y + off1), (width, y + off1)))
+            lines.append(((prev_x, prev_y + off2), (width, y + off2)))
 
     return lines
 
@@ -241,7 +244,7 @@ def main():
     width = len(matrix[0])
     height = len(matrix)
 
-    unit = 10
+    unit = 9
 
     # Program sleeps so that you can switch to the drawing program,
     # might want to wait for a click or hotkey instead.
@@ -252,9 +255,9 @@ def main():
 
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
-    draw_lines(value5_lines(matrix), start, unit)
-    draw_lines(value7_lines(matrix), start, unit)
-    draw_lines(value8_lines(matrix), start, unit)
+    draw_lines(value5_lines(matrix, width, height), start, unit)
+    draw_lines(value7_lines(matrix, width, height), start, unit)
+    draw_lines(value8_lines(matrix, width, height), start, unit)
 
 
 if __name__ == "__main__":
