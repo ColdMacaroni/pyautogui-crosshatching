@@ -78,8 +78,7 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
     smallest_side, largest_side = sorted((height, width))
 
     for offset in range(-largest_side + 1, smallest_side):
-
-        line = []
+        prev_x = prev_y = None
 
         # This will get me the diagonal i want
         diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
@@ -87,20 +86,21 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
         # First array contains x positions, the second: y.
         for x, y in zip(*diag_coords):
             # Line needs a start, top right
-            if len(line) == 0 and matrix[y][x] >= val:
-                line.append((x + 1, y))
+            if prev_x is None and matrix[y][x] >= val:
+                prev_x = x
+                prev_y = y
 
             # Line needs an end, bottom left
-            elif len(line) == 1 and not matrix[y][x] >= val:
-                line.append((x + 1, y))
-
+            elif prev_x is not None and not matrix[y][x] >= val:
                 # Then we update the lines and set up for the next loop
-                lines.append((line[0], line[1]))
-                line.clear()
+                lines.append(((prev_x + 1, prev_y), (x + 1, y)))
+
+                # Reset for next loop
+                prev_x = prev_y = None
 
         # Add end point
-        if len(line) == 1:
-            lines.append((line[0], (x, y + 1)))
+        if prev_x is not None:
+            lines.append(((prev_x + 1, prev_y), (x, y + 1)))
 
     return lines
 
