@@ -382,6 +382,51 @@ def value8_lines(matrix, width, height):
     return lines
 
 
+def value9_lines(matrix, width, height):
+    """Gets the outlines"""
+    val = 9
+    lines = []
+
+    # Travel along the y
+    for y in range(height):
+        prev_ht_x = prev_ht_y = prev_hb_x = prev_hb_y = None
+
+        # Check each horizontal line
+        for x in range(width):
+            # Top line, always drawn
+            if prev_ht_x is None and matrix[y][x] >= val:
+                prev_ht_x = x
+                prev_ht_y = y
+
+            elif prev_ht_x is not None and not matrix[y][x] >= val:
+                # We only need to draw one because they'll overlap
+                lines.append(((prev_ht_x, prev_ht_y), (x, y)))
+
+                prev_ht_x = prev_ht_y = None
+
+            # Bottom line, drawn when there isn't one below
+            if prev_hb_x is None and matrix[y][x] >= val and (y == height - 1 or not matrix[y+1][x] >= val):
+                prev_hb_x = x
+                prev_hb_y = y
+
+            elif prev_hb_x is not None and (not matrix[y][x] >= val or (y < height - 1 and not matrix[y+1][x] >= val)):
+                # We only need to draw one because they'll overlap
+                lines.append(((prev_hb_x, prev_hb_y + 1), (x, y + 1)))
+
+                prev_hb_x = prev_hb_y = None
+
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if prev_ht_x is not None:
+            lines.append(((prev_ht_x, prev_ht_y), (x + 1, y)))
+
+        if prev_hb_x is not None:
+            lines.append(((prev_hb_x, prev_hb_y + 1), (x+1, y + 1)))
+            
+
+    return lines
+
 def convert(pos, strt, unit):
     """Converts an xy to autogui pos"""
     return pos[0] * unit + strt[0], pos[1] * unit + strt[1]
@@ -438,6 +483,7 @@ def main():
     draw_lines(value6_lines(matrix, width, height), start, unit)
     draw_lines(value7_lines(matrix, width, height), start, unit)
     draw_lines(value8_lines(matrix, width, height), start, unit)
+    draw_lines(value9_lines(matrix, width, height), start, unit)
 
 
 if __name__ == "__main__":
