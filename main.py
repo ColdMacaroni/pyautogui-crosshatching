@@ -358,7 +358,7 @@ def main():
     else:
         matrix = generate_test_matrix()
 
-    matrix = [[2, 0, 2, 2, 0, 2] for _ in range(5)]
+    # matrix = [[2, 0, 2, 2, 0, 2] for _ in range(5)]
 
     width = len(matrix[0])
     height = len(matrix)
@@ -374,7 +374,7 @@ def main():
 
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
-    draw_lines(value2_lines(matrix, width, height), start, unit)
+    # draw_lines(value2_lines(matrix, width, height), start, unit)
     draw_lines(value3_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix, width, height), start, unit)
     draw_lines(value6_lines(matrix, width, height), start, unit)
