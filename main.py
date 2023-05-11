@@ -441,10 +441,24 @@ def value9_lines(matrix, width, height):
                 # Reset
                 prev_vl_x = prev_vl_y = None
 
+            # Draw line at the right
+            if prev_vr_x is None and matrix[y][x] >= val and (x == width - 1 or not matrix[y][x + 1] >= val):
+                prev_vr_x = x
+                prev_vr_y = y
+
+            elif prev_vr_x is not None and (not matrix[y][x] >= val or (x < width - 1 and not matrix[y][x + 1] >= val)):
+                lines.append(((prev_vr_x+1, prev_vr_y), (x+1, y)))
+
+                # Reset
+                prev_vr_x = prev_vr_y = None
+
         # Add end point as end of image
         # This will happen if the line reaches to the end
         if prev_vl_x is not None:
             lines.append(((prev_vl_x, prev_vl_y), (x, height)))
+
+        if prev_vr_x is not None:
+            lines.append(((prev_vr_x + 1, prev_vr_y), (x + 1, y + 1)))
 
 
 
