@@ -383,11 +383,11 @@ def value8_lines(matrix, width, height):
 
 
 def value9_lines(matrix, width, height):
-    """Gets the outlines"""
+    """Gets the outlines. This function is also horrible"""
     val = 9
     lines = []
 
-    # Travel along the y
+    # Do horizontal lines
     for y in range(height):
         prev_ht_x = prev_ht_y = prev_hb_x = prev_hb_y = None
 
@@ -423,7 +423,30 @@ def value9_lines(matrix, width, height):
 
         if prev_hb_x is not None:
             lines.append(((prev_hb_x, prev_hb_y + 1), (x+1, y + 1)))
-            
+
+    # Do vertical lines
+        # Travel along the x
+    for x in range(width):
+        prev_vl_x = prev_vl_y = prev_vr_x = prev_vr_y = None
+
+        # Draw the left edge
+        for y in range(height):
+            if prev_vl_x is None and matrix[y][x] >= val:
+                prev_vl_x = x
+                prev_vl_y = y
+
+            elif prev_vl_x is not None and not matrix[y][x] >= val:
+                lines.append(((prev_vl_x, prev_vl_y), (x, y)))
+
+                # Reset
+                prev_vl_x = prev_vl_y = None
+
+        # Add end point as end of image
+        # This will happen if the line reaches to the end
+        if prev_vl_x is not None:
+            lines.append(((prev_vl_x, prev_vl_y), (x, height)))
+
+
 
     return lines
 
