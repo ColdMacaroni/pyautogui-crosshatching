@@ -4,6 +4,8 @@ from PIL import Image
 from sys import argv
 import numpy as np
 
+pyautogui.PAUSE = 0.02
+
 # How dark the image is
 VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
@@ -64,6 +66,87 @@ def generate_test_matrix():
     return test
 
 
+def get_diagonal_coords(matrix: list[list[int]], width: int, height: int, rtl: bool = False):
+    if rtl:
+        width_range = lambda: range(width - 1, -1 , -1)
+    else:
+        width_range = lambda: range(width)
+
+    coord_matrix = [
+        [
+            (x, y)
+            for x in width_range()
+        ]
+            for y in range(height)
+    ]
+
+    smallest_side, largest_side = sorted((height, width))
+
+    for offset in range(-largest_side + 1, smallest_side):
+        prev_x = prev_y = None
+
+        # This will get me the diagonal i want
+        diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
+        yield diag_coords
+
+# -- BEGIN TERRIFYING CODE
+def gen_double_diag_lines(matrix: list[list[int]], width: int, height: int, val: int, rtl: bool = False):
+    ls = []
+
+    diags = get_diagonal_coords(matrix, width, height, rtl)
+
+    for diag in diags:
+        prev_pt_top = None
+        prev_pt_bot = None
+        for (x, y) in zip(*diag):
+            # -- Set starting point
+            if prev_pt_top is None and matrix[y][x] >= val:
+                prev_pt_top = (x + 0.5, y)
+
+            # --
+            # -- If the current block is not dark enough, we finish that line on the prev cell.
+            elif prev_pt_top is not None and matrix[y][x] < val:
+                ls.append((prev_pt_top, (x + rtl, y - 0.5)))
+                prev_pt_top = None
+
+            # --
+            # -- If the line intersects a lighter cell, stop the line.
+            if prev_pt_top is not None and (0 - (not rtl) < x < width - (not rtl)) and matrix[y][x + (-1 if rtl else 1)] < val:
+                ls.append((prev_pt_top, (x + (not rtl), y + 0.5)))
+                prev_pt_top = None
+
+
+            # ---- Bottom line
+
+            # -- Set starting point
+            if prev_pt_bot is None and matrix[y][x] >= val:
+                prev_pt_bot = (x + rtl, y + 0.5)
+
+            # --
+            # -- If the current block is not dark enough, we finish that line
+            elif prev_pt_bot is not None and matrix[y][x] < val:
+                ls.append((prev_pt_bot, (x + (1.5 if rtl else -0.5), y)))
+                prev_pt_bot = None
+            # --
+            # -- If the line intersects a lighter cell, stop the line.
+            if prev_pt_bot is not None and (y < height - 1) and matrix[y + 1][x] < val:
+                ls.append((prev_pt_bot, (x + 0.5, y + 1)))
+                prev_pt_bot = None
+
+        # Check that there aren't any left over points
+        if prev_pt_top is not None:
+            ls.append((prev_pt_top, (x + (not rtl), y + 0.5)))
+            prev_pt_top = None
+
+        if prev_pt_bot is not None:
+            ls.append((prev_pt_bot, (x + 0.5, y + 1)))
+            prev_pt_bot = None
+
+    return ls
+# -- END TERRIFYING CODE
+
+
+
 def value1_lines(matrix: list[list[int]], width: int, height: int):
     """Gets the single BL -> TR diagonal lines
     This function tries really hard to only traverse through the widest side"""
@@ -108,43 +191,8 @@ def value1_lines(matrix: list[list[int]], width: int, height: int):
 def value2_lines(matrix: list[list[int]], width: int, height: int):
     """Gets the double BL -> TR diagonal lines"""
     val = 2
-    lines = []
 
-    # TODO! Not working
-
-    # We're going top left to bottom right, so we need to flip the matrix
-    coord_matrix = [
-        [(x, y) for x in range(width - 1, -1, -1)]
-        for y in range(height)]
-
-    smallest_side, largest_side = sorted((height, width))
-
-    for offset in range(-largest_side + 1, smallest_side):
-        prev_x = prev_y = None
-
-        # This will get me the diagonal i want
-        diag_coords = np.diagonal(coord_matrix, offset, 1, 0)
-
-        # First array contains x positions, the second: y.
-        for x, y in zip(*diag_coords):
-            # Line needs a start, top right
-            if prev_x is None and matrix[y][x] >= val:
-                prev_x = x
-                prev_y = y
-
-            # Line needs an end, bottom left
-            elif prev_x is not None and not matrix[y][x] >= val:
-                # Then we update the lines and set up for the next loop
-                lines.append(((prev_x + 0.5, prev_y), (x, y + 0.5)))
-                lines.append(((prev_x + 1, prev_y + 0.5), (x + 0.5, y + 1)))
-
-                # Reset for next loop
-                prev_x = prev_y = None
-
-        # Add end point
-        if prev_x is not None:
-            lines.append(((prev_x + 0.5, prev_y), (x, y + 0.5)))
-            lines.append(((prev_x + 1, prev_y + 0.5), (x + 0.5, y + 1)))
+    lines = gen_double_diag_lines(matrix, width, height, val, rtl=True)
 
     return lines
 
@@ -185,6 +233,15 @@ def value3_lines(matrix: list[list[int]], width: int, height: int):
         # Add end point
         if prev_x is not None:
             lines.append(((prev_x, prev_y), (x + 1, y + 1)))
+
+    return lines
+
+
+def value4_lines(matrix: list[list[int]], width: int, height: int):
+    """Gets the double TL -> BR diagonal lines"""
+    val = 4
+
+    lines = gen_double_diag_lines(matrix, width, height, val, rtl=False)
 
     return lines
 
@@ -363,7 +420,7 @@ def main():
     width = len(matrix[0])
     height = len(matrix)
 
-    unit = 9
+    unit = 20
 
     # Program sleeps so that you can switch to the drawing program,
     # might want to wait for a click or hotkey instead.
@@ -374,8 +431,9 @@ def main():
 
     # Draw values
     draw_lines(value1_lines(matrix, width, height), start, unit)
-    # draw_lines(value2_lines(matrix, width, height), start, unit)
+    draw_lines(value2_lines(matrix, width, height), start, unit)
     draw_lines(value3_lines(matrix, width, height), start, unit)
+    draw_lines(value4_lines(matrix, width, height), start, unit)
     draw_lines(value5_lines(matrix, width, height), start, unit)
     draw_lines(value6_lines(matrix, width, height), start, unit)
     draw_lines(value7_lines(matrix, width, height), start, unit)
